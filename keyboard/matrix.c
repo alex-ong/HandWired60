@@ -58,6 +58,12 @@ uint8_t matrix_scan(void)
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         select_row(i);
         _delay_us(30);  // without this wait read unstable value.
+		//Hasu: Datasheet says port read synchronization needs 2 system clock, so two NOP should be enough before read. 
+		//But I've never try that and I also use some us of delay just because I didn't know about port synchronizer 
+		//when I came across wrong reading problem. I'll try two NOP instead of delay when I have time.
+		// Todo: replace _delay_us(30) with asm volatile ("nop")
+		//asm volatile ("nop");
+		//asm volatile ("nop");
         matrix_row_t cols = read_cols();
         if (matrix_debouncing[i] != cols) {
             matrix_debouncing[i] = cols;
