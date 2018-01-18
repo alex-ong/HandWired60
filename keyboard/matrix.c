@@ -7,11 +7,10 @@
 #include "util.h"
 #include "matrix.h"
 #include "debounce_matrix.h"
-#include "timer.h"
 
-
-#ifndef DEBOUNCE
-#   define DEBOUNCE	5
+#define BENCHMARK_MATRIX
+#ifdef BENCHMARK_MATRIX
+	#include "timer.h"
 #endif
 
 
@@ -51,9 +50,13 @@ void matrix_init(void)
     }
 }
 
+#ifdef BENCHMARK_MATRIX
+	static int scans = 0;
+	static uint16_t last_print_out = 0;
+#endif
 uint8_t matrix_scan(void)
-{
-	
+{	
+
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         select_row(i);
         _delay_us(30);  // without this wait read unstable value.
@@ -68,6 +71,23 @@ uint8_t matrix_scan(void)
         unselect_rows();
     }
 
+	#ifdef BENCHMARK_MATRIX
+		scans++;
+		uint16_t timer = timer_read();
+		
+		if ((timer % 1000 == 0) && (timer != last_print_out))
+		{
+			print("Benchmark:");
+			print("\n");
+			print_dec(timer);
+			print("\n");
+			print_dec(scans);
+			print("\n");
+			print("-------");
+			scans = 0;
+			last_print_out = timer;
+		}
+	#endif
     return 1;
 }
 
