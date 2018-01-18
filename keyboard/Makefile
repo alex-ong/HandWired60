@@ -8,9 +8,9 @@ TMK_DIR = ../tmk_core
 TARGET_DIR = .
 
 # project specific files
-SRC =	keymap_common.c 	matrix.c 	led.c
+SRC =	keymap_common.c 	matrix.c 	led.c	debounce_matrix.c
 
-SRC := keymap.c $(SRC)
+SRC := keymap.c $(SRC) 
 
 CONFIG_H = config.h
 

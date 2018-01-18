@@ -15,8 +15,9 @@
 #define MATRIX_COLS 13
 
 
-/* Set 0 if debouncing isn't needed */
-#define DEBOUNCE    5
+/* Key-presses are sent immediately. Debounce is how long before we are allowed to check for next signal */
+#define DEBOUNCE_RELEASE 5 //After releasing, how long before we can check for key-up?
+#define DEBOUNCE_PRESS 5 //After pressing, how long before we can check for key-down?
 
 /* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
 #define LOCKING_SUPPORT_ENABLE
