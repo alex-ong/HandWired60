@@ -120,62 +120,61 @@ uint8_t matrix_key_count(void)
 }
 
 static void init_cols(void) {
-    DDRF  &= ~(1 << 0 | 1 << 1);
-    PORTF |=  (1 << 0 | 1 << 1);
+    DDRC  &= ~(1 << 6);
+    PORTC |=  (1 << 6);
+    DDRD  &= ~(1 << 7);
+    PORTD |=  (1 << 7);
     DDRE  &= ~(1 << 6);
     PORTE |=  (1 << 6);
-    DDRC  &= ~(1 << 7 | 1 << 6);
-    PORTC |=  (1 << 7 | 1 << 6);
-    DDRB  &= ~(1 << 6 | 1 << 1 | 1 << 7 | 1 << 5 | 1 << 4 | 1 << 3);
-    PORTB |=  (1 << 6 | 1 << 1 | 1 << 7 | 1 << 5 | 1 << 4 | 1 << 3);
-    DDRD  &= ~(1 << 4 | 1 << 7 | 1 << 6);
-    PORTD |=  (1 << 4 | 1 << 7 | 1 << 6);
+    DDRB  &= ~(1 << 4 | 1 << 5 | 1 << 6 | 1 << 2 | 1 << 3 | 1 << 1);
+    PORTB |=  (1 << 4 | 1 << 5 | 1 << 6 | 1 << 2 | 1 << 3 | 1 << 1);
+    DDRF  &= ~(1 << 7 | 1 << 6 | 1 << 5 | 1 << 4);
+    PORTF |=  (1 << 7 | 1 << 6 | 1 << 5 | 1 << 4);
 }
 
 static matrix_row_t read_cols(void) {
     return
-        (PINF & (1 << 0) ? 0 : (1UL <<  0)) |
-        (PINF & (1 << 1) ? 0 : (1UL <<  1)) |
+        (PINC & (1 << 6) ? 0 : (1UL <<  0)) |
+        (PIND & (1 << 7) ? 0 : (1UL <<  1)) |
         (PINE & (1 << 6) ? 0 : (1UL <<  2)) |
-        (PINC & (1 << 7) ? 0 : (1UL <<  3)) |
-        (PINC & (1 << 6) ? 0 : (1UL <<  4)) |
+        (PINB & (1 << 4) ? 0 : (1UL <<  3)) |
+        (PINB & (1 << 5) ? 0 : (1UL <<  4)) |
         (PINB & (1 << 6) ? 0 : (1UL <<  5)) |
-        (PIND & (1 << 4) ? 0 : (1UL <<  6)) |
-        (PINB & (1 << 1) ? 0 : (1UL <<  7)) |
-        (PINB & (1 << 7) ? 0 : (1UL <<  8)) |
-        (PINB & (1 << 5) ? 0 : (1UL <<  9)) |
-        (PINB & (1 << 4) ? 0 : (1UL << 10)) |
-        (PIND & (1 << 7) ? 0 : (1UL << 11)) |
-        (PIND & (1 << 6) ? 0 : (1UL << 12)) |
-        (PINB & (1 << 3) ? 0 : (1UL << 13));
+        (PINB & (1 << 2) ? 0 : (1UL <<  6)) |
+        (PINB & (1 << 3) ? 0 : (1UL <<  7)) |
+        (PINB & (1 << 1) ? 0 : (1UL <<  8)) |
+        (PINF & (1 << 7) ? 0 : (1UL <<  9)) |
+        (PINF & (1 << 6) ? 0 : (1UL << 10)) |
+        (PINF & (1 << 5) ? 0 : (1UL << 11)) |
+        (PINF & (1 << 4) ? 0 : (1UL << 12));
 }
 
 static void unselect_rows(void) {
-    DDRD  &= ~0b00101111;
-    PORTD &= ~0b00101111;
+    DDRD  &= ~0b00011111;
+    PORTD &= ~0b00011111;
 }
 
 static void select_row(uint8_t row) {
     switch (row) {
         case 0:
-            DDRD  |=  (1 << 0);
-            PORTD &= ~(1 << 0);
-            break;
-        case 1:
-            DDRD  |=  (1 << 1);
-            PORTD &= ~(1 << 1);
-            break;
-        case 2:
-            DDRD  |=  (1 << 2);
-            PORTD &= ~(1 << 2);
-            break;
-        case 3:
             DDRD  |=  (1 << 3);
             PORTD &= ~(1 << 3);
             break;
+        case 1:
+            DDRD  |=  (1 << 2);
+            PORTD &= ~(1 << 2);
+            break;
+        case 2:
+            DDRD  |=  (1 << 1);
+            PORTD &= ~(1 << 1);
+            break;
+        case 3:
+            DDRD  |=  (1 << 0);
+            PORTD &= ~(1 << 0);
+            break;
         case 4:
-            DDRD  |=  (1 << 5);
-            PORTD &= ~(1 << 5);
+            DDRD  |=  (1 << 4);
+            PORTD &= ~(1 << 4);
             break;
     }
 };

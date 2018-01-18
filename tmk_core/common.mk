@@ -80,7 +80,7 @@ ifdef KEYMAP_SECTION_ENABLE
 
     ifeq ($(strip $(MCU)),atmega32u2)
 	EXTRALDFLAGS = -Wl,-L$(TMK_DIR),-Tldscript_keymap_avr35.x
-    elseifeq ($(strip $(MCU)),atmega32u4)
+    else ifeq ($(strip $(MCU)),atmega32u4)
 	EXTRALDFLAGS = -Wl,-L$(TMK_DIR),-Tldscript_keymap_avr5.x
     else
 	EXTRALDFLAGS = $(error no ldscript for keymap section)

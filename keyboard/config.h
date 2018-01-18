@@ -12,7 +12,7 @@
 
 /* key matrix size */
 #define MATRIX_ROWS 5
-#define MATRIX_COLS 14
+#define MATRIX_COLS 13
 
 
 /* Set 0 if debouncing isn't needed */
