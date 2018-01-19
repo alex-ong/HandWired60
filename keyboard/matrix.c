@@ -89,13 +89,14 @@ static void benchmark(void)
 
 uint8_t matrix_scan(void)
 {	
+    //scan currently takes at least 150 microseconds = 0.15 milliseconds
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         select_row(i);
         _delay_us(30);  // without this wait read unstable value.
         //two nops = 62.5 nanoseconds (vs 30 microseconds currently)
-        //asm volatile ("nop"); //asm volatile ("nop");		
+        //asm volatile ("nop"); //asm volatile ("nop");
         matrix_row_t cols = read_cols();
-        raw_matrix[i] = cols;		
+        raw_matrix[i] = cols;
         unselect_rows();
     }
 
