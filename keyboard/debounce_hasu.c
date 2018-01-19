@@ -1,6 +1,6 @@
 /*
 Original TMK algorithm
-Scans entire matrix, then waits 5ms if any changes until stabilization occurs.
+Scans entire matrix, only updating entire matrix if no changes occured in last 5ms
 */
 #include "matrix.h"
 #include "debounce_matrix.h"
@@ -23,23 +23,14 @@ void debounce_matrix_init(void)
 
 void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matrix)
 {
-    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {        
+    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         matrix_row_t cols = raw_values[i];
         if (matrix_debouncing[i] != cols) {
             matrix_debouncing[i] = cols;
-            debouncing = true;
+            debouncing = DEBOUNCE;
         }
     }
-
-    if (debouncing) {
-        _delay_ms(DEBOUNCE);
-        debouncing = false;
-        for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-            output_matrix[i] = matrix_debouncing[i];
-        }
-    }
-
-    /*
+    
     if (debouncing) {
         if (--debouncing) {
             _delay_ms(1);
@@ -49,6 +40,5 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
             }
         }
     }
-    */
 
 }
