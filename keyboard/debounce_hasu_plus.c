@@ -58,10 +58,12 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
 {
     current_time = timer_read() % MAX_DEBOUNCE; //update timer.
     debounce_t* data = debounce_data;
+    matrix_row_t* local_data = matrix_debouncing;
+    
     for (uint8_t row_num = 0; row_num < MATRIX_ROWS; row_num++) {
-        matrix_row_t cols = raw_values[row_num];
-        matrix_row_t result = output_matrix[row_num];
-        matrix_row_t existing = matrix_debouncing[row_num];
+        matrix_row_t cols = *raw_values;
+        matrix_row_t result = *output_matrix;
+        matrix_row_t existing = *local_data;
         
         for (uint8_t col_num = 0; col_num < MATRIX_COLS; col_num++) {
             bool new_col = CHECK_BIT(cols, col_num);
@@ -93,8 +95,12 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
             data++;
         }
         
-        matrix_debouncing[row_num] = cols;        
-        output_matrix[row_num] = result;
+        *local_data = cols;        
+        *output_matrix = result;
+        
+        raw_values++;
+        output_matrix++;
+        local_data++;
     }
     
 }
