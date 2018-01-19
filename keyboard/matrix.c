@@ -58,12 +58,19 @@ void matrix_init(void)
 #ifdef BENCHMARK_MATRIX
     static int scans = 0;
     static uint16_t last_print_out = 0;
-
+    static int last_timer = 0;
 static void benchmark(void)
 {
     scans++;
     uint16_t timer = timer_read();
-        
+    if (timer != last_timer && timer != last_timer + 1)
+    {
+        print("timer didn't exact-increment");
+        print_dec(timer);
+        print_dec(last_timer);
+    }
+
+    last_timer = timer;
     if ((timer % 1000 == 0) && (timer != last_print_out))
     {
         print("Benchmark:");
