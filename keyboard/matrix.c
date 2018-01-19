@@ -10,12 +10,13 @@
 
 #define BENCHMARK_MATRIX
 #ifdef BENCHMARK_MATRIX
-	#include "timer.h"
+    #include "timer.h"
 #endif
 
 
 /* matrix state(1:on, 0:off) */
 static matrix_row_t matrix[MATRIX_ROWS];
+static matrix_row_t raw_matrix[MATRIX_ROWS];
 
 static matrix_row_t read_cols(void);
 static void init_cols(void);
@@ -47,47 +48,56 @@ void matrix_init(void)
     // initialize matrix state: all keys off
     for (uint8_t i=0; i < MATRIX_ROWS; i++) {
         matrix[i] = 0;
+        raw_matrix[i] = 0;
     }
+
+    // initialize our debounce matrix
+    debounce_matrix_init();
 }
 
 #ifdef BENCHMARK_MATRIX
-	static int scans = 0;
-	static uint16_t last_print_out = 0;
+    static int scans = 0;
+    static uint16_t last_print_out = 0;
+
+static void benchmark(void)
+{
+    scans++;
+    uint16_t timer = timer_read();
+        
+    if ((timer % 1000 == 0) && (timer != last_print_out))
+    {
+        print("Benchmark:");
+        print("\n");
+        print_dec(timer);
+        print("\n");
+        print_dec(scans);
+        print("\n");
+        print("-------");
+        scans = 0;
+        last_print_out = timer;
+    }
+}
 #endif
+
+
 uint8_t matrix_scan(void)
 {	
-
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         select_row(i);
         _delay_us(30);  // without this wait read unstable value.
-		//Hasu: Datasheet says port read synchronization needs 2 system clock, so two NOP should be enough before read. 
-		//But I've never try that and I also use some us of delay just because I didn't know about port synchronizer 
-		//when I came across wrong reading problem. I'll try two NOP instead of delay when I have time.
-		// Todo: replace _delay_us(30) with asm volatile ("nop")
-		//asm volatile ("nop");
-		//asm volatile ("nop");
+        //two nops = 62.5 nanoseconds (vs 30 microseconds currently)
+        //asm volatile ("nop"); //asm volatile ("nop");		
         matrix_row_t cols = read_cols();
-		matrix[i] = debounce_matrix_set_row(i, cols);
+        raw_matrix[i] = cols;		
         unselect_rows();
     }
 
-	#ifdef BENCHMARK_MATRIX
-		scans++;
-		uint16_t timer = timer_read();
-		
-		if ((timer % 1000 == 0) && (timer != last_print_out))
-		{
-			print("Benchmark:");
-			print("\n");
-			print_dec(timer);
-			print("\n");
-			print_dec(scans);
-			print("\n");
-			print("-------");
-			scans = 0;
-			last_print_out = timer;
-		}
-	#endif
+    //debounce our keys. feed in raw matrix, let it write to final matrix.
+    update_debounce_matrix(raw_matrix, matrix);
+
+    #ifdef BENCHMARK_MATRIX
+        benchmark();
+    #endif
     return 1;
 }
 

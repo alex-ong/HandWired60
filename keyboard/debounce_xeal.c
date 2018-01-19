@@ -6,6 +6,9 @@
 #define MAX_DEBOUNCE (1 << 7)
 #define DEBOUNCE_MODULO_MASK (0x7F)
 
+//first bit is whether we are bouncing, remaining 7 bits is modulo of when we are ready again
+typedef uint8_t debounce_button_t; 
+
 static debounce_button_t matrix[MATRIX_ROWS * MATRIX_COLS];
 static matrix_row_t debounced_matrix[MATRIX_ROWS];
 static uint8_t current_time = 0;
