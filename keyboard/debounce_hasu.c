@@ -10,7 +10,7 @@ Scans entire matrix, only updating entire matrix if no changes occured in last 5
     #define DEBOUNCE 5
 #endif
 
-static bool debouncing = DEBOUNCE; //debouncing timer in milliseconds.
+static uint8_t debouncing = DEBOUNCE; //debouncing timer in milliseconds.
 static matrix_row_t matrix_debouncing[MATRIX_ROWS];
 
 void debounce_matrix_init(void)
