@@ -12,8 +12,13 @@ static debounce_button_t matrix[MATRIX_ROWS * MATRIX_COLS];
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
-#define KEY_DOWN 0b00000001 //first key down after at least 7 cycles of release
-#define KEY_UP 0b11111110 //first key_release after at least 7 cycles of keydown
+
+#define DEBOUNCE_KEY_DOWN 5 //number of readings for before we accept that the key is actually down
+#define DEBOUNCE_KEY_UP 5
+#define KEY_DOWN_MASK (0b11111111 >> (8 - DEBOUNCE_KEY_DOWN))
+#define KEY_UP_MASK (0b11111111 >> (8 - DEBOUNCE_KEY_UP)) //first key_release after at least 7 cycles of keydown
+#define IS_KEY_DOWN(var) (((var) & KEY_DOWN_MASK) == KEY_DOWN_MASK)
+#define IS_KEY_UP(var) (((~(var)) & KEY_UP_MASK) == KEY_UP_MASK)
 
 void debounce_matrix_init(void)
 {
@@ -37,9 +42,9 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
             bool raw_value = CHECK_BIT(raw_row, col);
             
             *button_history = (*button_history << 1) | raw_value; //shift everything along.
-            if (*button_history == KEY_DOWN) {
+            if (IS_KEY_DOWN(*button_history)) {
                 result_row |= 1 << col;
-            } else if (*button_history == KEY_UP) {
+            } else if (IS_KEY_UP(*button_history)) {
                 result_row &= ~(1 << col);
             } //else we don't modify button state, and it stays the same
             button_history++;

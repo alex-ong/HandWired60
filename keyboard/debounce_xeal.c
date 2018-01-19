@@ -4,13 +4,14 @@
 
 //debounce times in milliseconds. Note that keys are sent on first state change,
 //so there is no EMI protection. Actual debounce time is between (value) and (value - 1),
-//due to timer resolution.
+//due to timer resolution. Relies on all your switches actualy being good.
+//In testing, a few dud switches completely ruined the experience.
 #ifndef DEBOUNCE_PRESS
     #define DEBOUNCE_PRESS 5
 #endif
 
 #ifndef DEBOUNCE_RELEASE
-    #define DEBOUNCE_RELEASE 5
+    #define DEBOUNCE_RELEASE 10
 #endif
 
 #define BOUNCE_BIT              (0b10000000)

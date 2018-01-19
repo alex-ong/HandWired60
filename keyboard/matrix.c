@@ -64,10 +64,12 @@ static void benchmark(void)
     scans++;
     uint16_t timer = timer_read();
     if (timer != last_timer && timer != last_timer + 1)
-    {
-        print("timer didn't exact-increment");
+    {        
+        print ("MS:\n");
         print_dec(timer);
+        print ("->");
         print_dec(last_timer);
+        print("\n");
     }
 
     last_timer = timer;
@@ -92,9 +94,10 @@ uint8_t matrix_scan(void)
     //scan currently takes at least 150 microseconds = 0.15 milliseconds
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         select_row(i);        
+        //_delay_us(30);
         // must sleep for two nops before calling read_cols()
         // or get corrupted data        
-        asm volatile ("nop"); asm volatile ("nop");
+        asm volatile ("nop"); asm volatile ("nop");        
         matrix_row_t cols = read_cols();
         raw_matrix[i] = cols;
         unselect_rows();
