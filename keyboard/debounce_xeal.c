@@ -12,7 +12,6 @@
 typedef uint8_t debounce_button_t; 
 
 static debounce_button_t matrix[MATRIX_ROWS * MATRIX_COLS];
-static matrix_row_t debounced_matrix[MATRIX_ROWS];
 static uint8_t current_time;
 
 void debounce_matrix_init(void)
@@ -20,10 +19,6 @@ void debounce_matrix_init(void)
     for (uint8_t i = 0; i < MATRIX_ROWS * MATRIX_COLS; i++)
     {
         matrix[i] = 0;
-    }
-    for (uint8_t i = 0; i < MATRIX_ROWS; i++)
-    {
-        debounced_matrix[i] = 0;
     }
 }
 

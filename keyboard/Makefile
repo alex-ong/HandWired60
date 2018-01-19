@@ -9,7 +9,9 @@ TARGET_DIR = .
 
 # project specific files
 SRC =	keymap_common.c 	matrix.c 	led.c	
-DEBOUNCE =	debounce_hasu.c
+#DEBOUNCE =	debounce_xeal.c
+#DEBOUNCE = debounce_hasu.c
+DEBOUNCE = debounce_soarer.c
 SRC := keymap.c $(SRC) $(DEBOUNCE)
 
 CONFIG_H = config.h
