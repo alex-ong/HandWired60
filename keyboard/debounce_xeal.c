@@ -3,7 +3,8 @@
 #include "timer.h"
 
 //debounce times in milliseconds. Note that keys are sent on first state change,
-//so there is no EMI protection.
+//so there is no EMI protection. Actual debounce time is between (value) and (value - 1),
+//due to timer resolution.
 #ifndef DEBOUNCE_PRESS
     #define DEBOUNCE_PRESS 5
 #endif
@@ -12,9 +13,9 @@
     #define DEBOUNCE_RELEASE 5
 #endif
 
-#define BOUNCE_BIT (1 << 7)
-#define MAX_DEBOUNCE (1 << 6)
-#define DEBOUNCE_MODULO_MASK (0b01111111)
+#define BOUNCE_BIT              (0b10000000)
+#define MAX_DEBOUNCE            (0b01111111)
+#define DEBOUNCE_MODULO_MASK    (0b01111111)
 #define IS_BOUNCING(button_data) (button_data) //just have to check for non-zero
 #define BOUNCE_EXPIRY(button_data) (button_data & DEBOUNCE_MODULO_MASK)
 
@@ -75,10 +76,14 @@ static inline void handle_new_data(matrix_row_t* raw_values, matrix_row_t* outpu
                         if (new_value) 
                         {
                             result_row = SET_BIT(result_row, col); //send press
+                            #if DEBOUNCE_PRESS != 0
                             set_expiry(button_data, DEBOUNCE_PRESS);
+                            #endif
                         } else {
                             result_row = CLEAR_BIT(result_row, col); //send release
+                            #if DEBOUNCE_RELEASE != 0
                             set_expiry(button_data, DEBOUNCE_RELEASE);
+                            #endif
                         }
                     }
                 }

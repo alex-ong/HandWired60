@@ -8,7 +8,7 @@
 #include "matrix.h"
 #include "debounce_matrix.h"
 
-#define BENCHMARK_MATRIX
+//#define BENCHMARK_MATRIX
 #ifdef BENCHMARK_MATRIX
     #include "timer.h"
 #endif
@@ -91,10 +91,10 @@ uint8_t matrix_scan(void)
 {	
     //scan currently takes at least 150 microseconds = 0.15 milliseconds
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-        select_row(i);
-        _delay_us(30);  // without this wait read unstable value.
-        //two nops = 62.5 nanoseconds (vs 30 microseconds currently)
-        //asm volatile ("nop"); //asm volatile ("nop");
+        select_row(i);        
+        // must sleep for two nops before calling read_cols()
+        // or get corrupted data        
+        asm volatile ("nop"); asm volatile ("nop");
         matrix_row_t cols = read_cols();
         raw_matrix[i] = cols;
         unselect_rows();
@@ -202,5 +202,5 @@ static void select_row(uint8_t row) {
             DDRD  |=  (1 << 4);
             PORTD &= ~(1 << 4);
             break;
-    }
+    }    
 };
