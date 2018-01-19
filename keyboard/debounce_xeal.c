@@ -2,10 +2,24 @@
 #include "debounce_matrix.h"
 #include "timer.h"
 
+//debounce times in milliseconds. Note that keys are sent on first state change,
+//so there is no EMI protection.
+#ifndef DEBOUNCE_PRESS
+    #define DEBOUNCE_PRESS 5
+#endif
+
+#ifndef DEBOUNCE_RELEASE
+    #define DEBOUNCE_RELEASE 5
+#endif
+
 #define BOUNCE_BIT (1 << 7)
 #define MAX_DEBOUNCE (1 << 6)
 #define DEBOUNCE_MODULO_MASK (0b01111111)
+#define IS_BOUNCING(button_data) (button_data) //just have to check for non-zero
+#define BOUNCE_EXPIRY(button_data) (button_data & DEBOUNCE_MODULO_MASK)
+
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+#define CLEAR_BIT(var,pos) ((var) & ~(1 << (pos)))
 #define SET_BIT(var,pos) ((var) | (1 << (pos)))
 
 //first bit is whether we are bouncing, remaining 7 bits is modulo of when we are ready again
@@ -22,73 +36,58 @@ void debounce_matrix_init(void)
     }
 }
 
-
-inline static bool is_bouncing(uint8_t index)
+inline static void set_expiry(debounce_button_t* button, uint8_t timeFromNow)
 {
-    //return (matrix[index] & BOUNCE_BIT == BOUNCE_BIT);
-    //return (matrix[index] & BOUNCE_BIT);
-    return (matrix[index]); //since value is non-zero, this works.
-}
-
-inline static uint8_t bounce_expiry(uint8_t index)
-{
-    return (matrix[index] & DEBOUNCE_MODULO_MASK);
-}
-
-inline static void set_expiry(uint8_t index, uint8_t timeFromNow)
-{
-    matrix[index] = ((current_time + timeFromNow) % MAX_DEBOUNCE) ^ BOUNCE_BIT;
+    *button = ((current_time + timeFromNow) % MAX_DEBOUNCE) ^ BOUNCE_BIT;
 }
 
 //We assume that this will be called at least once every millisecond!
 static void check_debounce_matrix(void) 
 {	    
+    debounce_button_t* button_data = matrix;
     for (uint8_t i = 0; i < MATRIX_ROWS * MATRIX_COLS; i++)
     {
-        if (is_bouncing(i) && current_time == bounce_expiry(i))
+        if (IS_BOUNCING(*button_data) && current_time == BOUNCE_EXPIRY(*button_data))
         {
-            matrix[i] = 0;
+            *button_data = 0;
         }
+        button_data++;
     }
 }
 
-//variables for function.
-
-
 static inline void handle_new_data(matrix_row_t* raw_values, matrix_row_t* output)
 {
-
-    for (uint8_t  row = 0; row < MATRIX_ROWS; row++)
+    for (uint8_t row = 0; row < MATRIX_ROWS; row++)
     {
-        matrix_row_t raw_row = raw_values[row];
-        matrix_row_t existing_row = output[row];
-        matrix_row_t result_row = 0;
-        uint8_t matrix_index = row * MATRIX_COLS;
+        matrix_row_t raw_row = *raw_values;
+        matrix_row_t existing_row = *output;
+        matrix_row_t result_row = existing_row;
 
         if (raw_row != existing_row) { //quick check for change.
-            for (uint8_t  col = 0; col < MATRIX_COLS; col++)
-            {
-                bool existing_value = CHECK_BIT(existing_row, col);
-                bool new_value = CHECK_BIT(raw_row, col);
-                if (is_bouncing(matrix_index))
-                {
-                    if (existing_value) result_row = SET_BIT(result_row, col);
-                    //else do nothing cause it's already 0
-                } 
-                else if (existing_value != new_value) 
-                {
-                    if (new_value) 
-                    {
-                        result_row = SET_BIT(result_row, col); //send press
-                        set_expiry(matrix_index, DEBOUNCE_PRESS); //won't detect release until at least this many ms has passed.
-                    } else {
-                        set_expiry(matrix_index, DEBOUNCE_RELEASE); //won't detect press until at least this many ms passed.
+            debounce_button_t* button_data = matrix + row * MATRIX_COLS;
+            for (uint8_t col = 0; col < MATRIX_COLS; col++)
+            {                
+                if (!IS_BOUNCING(*button_data))
+                {                    
+                    bool existing_value = CHECK_BIT(existing_row, col);
+                    bool new_value = CHECK_BIT(raw_row, col);
+                    if (existing_value != new_value) { //value changed, lets reflect that immediately
+                        if (new_value) 
+                        {
+                            result_row = SET_BIT(result_row, col); //send press
+                            set_expiry(button_data, DEBOUNCE_PRESS);
+                        } else {
+                            result_row = CLEAR_BIT(result_row, col); //send release
+                            set_expiry(button_data, DEBOUNCE_RELEASE);
+                        }
                     }
                 }
-                matrix_index++;
+                button_data++;
             }
+            *output = result_row;
         }
-        output[row] = result_row;
+        raw_values++;
+        output++;
     }
 }
 

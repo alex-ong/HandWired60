@@ -29,7 +29,7 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
 
     for (uint8_t row = 0; row < MATRIX_ROWS; row++)
     {
-        matrix_row_t raw_row = *raw_values++;
+        matrix_row_t raw_row = *raw_values;
         matrix_row_t result_row = *output_matrix; //grab original value
         
         for (uint8_t col = 0; col < MATRIX_COLS; col++)
@@ -41,11 +41,13 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
                 result_row |= 1 << col;
             } else if (*button_history == KEY_UP) {
                 result_row &= ~(1 << col);
-            }            
+            } //else we don't modify button state, and it stays the same
             button_history++;
         }
 
         *output_matrix  = result_row;
+        //incrememnt to next row of raw/output matrices
+        raw_values++;
         output_matrix++;
     }
 }
