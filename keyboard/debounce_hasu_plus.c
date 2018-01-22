@@ -15,9 +15,12 @@ Per key debouncing rather than whole-matrix debouncing.
     #define DEBOUNCE_RELEASE 5
 #endif
 
-#define CHECK_BIT(var,pos) ((var) & (1 <<(pos)))
-#define CLEAR_BIT(var,pos) ((var) & ~(1 << (pos)))
-#define SET_BIT(var,pos) ((var) | (1 << (pos)))
+#define CHECK_BIT(var,pos)          ((var) & (1 <<(pos)))
+#define CHECK_BITMASK(var, mask)    ((var) & (mask))
+#define SET_BIT(var,pos)            ((var) | (1 << (pos)))
+#define CLEAR_BIT(var,pos)          ((var) & ~(1 << (pos)))
+#define SET_BITMASK(var, mask)      ((var) | (mask))
+#define CLEAR_BITMASK(var, mask)    ((var) & ~(mask))
 
 static matrix_row_t matrix_debouncing[MATRIX_ROWS];
 
@@ -62,20 +65,22 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
         matrix_row_t result = *output_matrix;
         matrix_row_t existing = *local_data;
         
+        matrix_row_t bitmask = 0;
+
         for (uint8_t col_num = 0; col_num < MATRIX_COLS; col_num++) {
-            bool new_col = CHECK_BIT(cols, col_num);
-            bool old_col = CHECK_BIT(existing, col_num);
-            
+            bool new_col = CHECK_BITMASK(cols, bitmask);
+            bool old_col = CHECK_BITMASK(existing, bitmask);
+
             if (IS_DEBOUNCING(*data)) {                
-                if (!IS_TIME(*data, current_time)) { //otherwise skip check.
+                if (!IS_TIME(*data, current_time)) { //only check once per millisecond
                     if (new_col == old_col) {
                         uint8_t remaining_checks = CHECKS_REMAINING(*data);
-                        if (remaining_checks == 1) 
+                        if (remaining_checks == 1) //compare to one so we don't have to decrement
                         {
                             if (new_col) {
-                                result = SET_BIT(result, col_num);
+                                result = SET_BITMASK(result, bitmask);
                             } else {
-                                result = CLEAR_BIT(result, col_num);
+                                result = CLEAR_BITMASK(result, bitmask);
                             }
                             *data = 0;
                         } else {
@@ -87,9 +92,9 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
                 }
             } else if (new_col != old_col) { //not debouncing. time to add a debouncer
                 *data = set_debounce(new_col ? DEBOUNCE_PRESS : DEBOUNCE_RELEASE);
-            }      
-            
+            }                  
             data++;
+            bitmask >>= 1;            
         }
         
         *local_data = cols;
