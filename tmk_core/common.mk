@@ -1,7 +1,6 @@
 COMMON_DIR = common
 SRC +=	$(COMMON_DIR)/host.c \
 	$(COMMON_DIR)/keyboard.c \
-	$(COMMON_DIR)/matrix.c \
 	$(COMMON_DIR)/action.c \
 	$(COMMON_DIR)/action_tapping.c \
 	$(COMMON_DIR)/action_macro.c \
@@ -18,71 +17,65 @@ SRC +=	$(COMMON_DIR)/host.c \
 
 
 # Option modules
-ifeq (yes,$(strip $(UNIMAP_ENABLE)))
-    SRC += $(COMMON_DIR)/unimap.c
-    OPT_DEFS += -DUNIMAP_ENABLE
+ifdef ACTIONMAP_ENABLE
+    SRC += $(COMMON_DIR)/actionmap.c
     OPT_DEFS += -DACTIONMAP_ENABLE
 else
-    ifeq (yes,$(strip $(ACTIONMAP_ENABLE)))
-	SRC += $(COMMON_DIR)/actionmap.c
-	OPT_DEFS += -DACTIONMAP_ENABLE
-    else
-	SRC += $(COMMON_DIR)/keymap.c
-    endif
+    SRC += $(COMMON_DIR)/keymap.c
 endif
 
-ifeq (yes,$(strip $(BOOTMAGIC_ENABLE)))
+ifdef BOOTMAGIC_ENABLE
     SRC += $(COMMON_DIR)/bootmagic.c
     SRC += $(COMMON_DIR)/avr/eeconfig.c
     OPT_DEFS += -DBOOTMAGIC_ENABLE
 endif
 
-ifeq (yes,$(strip $(MOUSEKEY_ENABLE)))
+ifdef MOUSEKEY_ENABLE
     SRC += $(COMMON_DIR)/mousekey.c
     OPT_DEFS += -DMOUSEKEY_ENABLE
     OPT_DEFS += -DMOUSE_ENABLE
 endif
 
-ifeq (yes,$(strip $(EXTRAKEY_ENABLE)))
+ifdef EXTRAKEY_ENABLE
     OPT_DEFS += -DEXTRAKEY_ENABLE
 endif
 
-ifeq (yes,$(strip $(CONSOLE_ENABLE)))
+ifdef CONSOLE_ENABLE
     OPT_DEFS += -DCONSOLE_ENABLE
 else
     OPT_DEFS += -DNO_PRINT
     OPT_DEFS += -DNO_DEBUG
 endif
 
-ifeq (yes,$(strip $(COMMAND_ENABLE)))
+ifdef COMMAND_ENABLE
     SRC += $(COMMON_DIR)/command.c
     OPT_DEFS += -DCOMMAND_ENABLE
 endif
 
-ifeq (yes,$(strip $(NKRO_ENABLE)))
+ifdef NKRO_ENABLE
     OPT_DEFS += -DNKRO_ENABLE
 endif
 
-ifeq (yes,$(strip $(USB_6KRO_ENABLE)))
+ifdef USB_6KRO_ENABLE
     OPT_DEFS += -DUSB_6KRO_ENABLE
 endif
 
-ifeq (yes, $(strip $(KEYBOARD_LOCK_ENABLE)))
+ifdef KEYBOARD_LOCK_ENABLE
     OPT_DEFS += -DKEYBOARD_LOCK_ENABLE
 endif
 
-ifeq (yes,$(strip $(SLEEP_LED_ENABLE)))
+ifdef SLEEP_LED_ENABLE
     SRC += $(COMMON_DIR)/avr/sleep_led.c
     OPT_DEFS += -DSLEEP_LED_ENABLE
     OPT_DEFS += -DNO_SUSPEND_POWER_DOWN
 endif
 
-ifeq (yes,$(strip $(BACKLIGHT_ENABLE)))
+ifdef BACKLIGHT_ENABLE
     SRC += $(COMMON_DIR)/backlight.c
     OPT_DEFS += -DBACKLIGHT_ENABLE
 endif
 
-ifeq (yes,$(strip $(KEYMAP_SECTION_ENABLE)))
+ifdef KEYMAP_SECTION_ENABLE
     OPT_DEFS += -DKEYMAP_SECTION_ENABLE
 
     ifeq ($(strip $(MCU)),atmega32u2)

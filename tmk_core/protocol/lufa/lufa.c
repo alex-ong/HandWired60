@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright 2012 Jun Wako <wakojun@gmail.com>
  * This file is based on:
  *     LUFA-120219/Demos/Device/Lowlevel/KeyboardMouse
@@ -50,17 +50,8 @@
 #include "suspend.h"
 #include "hook.h"
 
-#ifdef LUFA_DEBUG_SUART
-#include "avr/suart.h"
-#endif
-
-#include "matrix.h"
 #include "descriptor.h"
 #include "lufa.h"
-
-
-//#define LUFA_DEBUG
-
 
 uint8_t keyboard_idle = 0;
 /* 0: Boot Protocol, 1: Report Protocol(default) */
@@ -109,10 +100,10 @@ static void Console_Task(void)
         {
             /* Create a temporary buffer to hold the read in report from the host */
             uint8_t ConsoleData[CONSOLE_EPSIZE];
-
+ 
             /* Read Console Report Data */
             Endpoint_Read_Stream_LE(&ConsoleData, sizeof(ConsoleData), NULL);
-
+ 
             /* Process Console Report Data */
             //ProcessConsoleHIDReport(ConsoleData);
         }
@@ -173,7 +164,7 @@ void EVENT_USB_Device_Disconnect(void)
     print("[D]");
     /* For battery powered device */
     USB_IsInitialized = false;
-/* TODO: This doesn't work. After several plug in/outs can not be enumerated.
+/* TODO: This doesn't work. After several plug in/outs can not be enumerated. 
     if (USB_IsInitialized) {
         USB_Disable();  // Disable all interrupts
 	USB_Controller_Enable();
@@ -184,24 +175,18 @@ void EVENT_USB_Device_Disconnect(void)
 
 void EVENT_USB_Device_Reset(void)
 {
-#ifdef LUFA_DEBUG
     print("[R]");
-#endif
 }
 
 void EVENT_USB_Device_Suspend()
 {
-#ifdef LUFA_DEBUG
     print("[S]");
-#endif
     hook_usb_suspend_entry();
 }
 
 void EVENT_USB_Device_WakeUp()
 {
-#ifdef LUFA_DEBUG
     print("[W]");
-#endif
     hook_usb_wakeup();
 }
 
@@ -232,9 +217,6 @@ void EVENT_USB_Device_StartOfFrame(void)
  */
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
-#ifdef LUFA_DEBUG
-    print("[c]");
-#endif
     bool ConfigSuccess = true;
 
     /* Setup Keyboard HID Report Endpoints */
@@ -311,9 +293,6 @@ void EVENT_USB_Device_ControlRequest(void)
                 /* Write the report data to the control endpoint */
                 Endpoint_Write_Control_Stream_LE(ReportData, ReportSize);
                 Endpoint_ClearOUT();
-#ifdef LUFA_DEBUG
-                xprintf("[r%d]", USB_ControlRequest.wIndex);
-#endif
             }
 
             break;
@@ -337,9 +316,6 @@ void EVENT_USB_Device_ControlRequest(void)
 
                     Endpoint_ClearOUT();
                     Endpoint_ClearStatusStage();
-#ifdef LUFA_DEBUG
-                    xprintf("[L%d]", USB_ControlRequest.wIndex);
-#endif
                     break;
                 }
 
@@ -356,9 +332,6 @@ void EVENT_USB_Device_ControlRequest(void)
                     Endpoint_Write_8(keyboard_protocol);
                     Endpoint_ClearIN();
                     Endpoint_ClearStatusStage();
-#ifdef LUFA_DEBUG
-                    print("[p]");
-#endif
                 }
             }
 
@@ -372,9 +345,6 @@ void EVENT_USB_Device_ControlRequest(void)
 
                     keyboard_protocol = (USB_ControlRequest.wValue & 0xFF);
                     clear_keyboard();
-#ifdef LUFA_DEBUG
-                    print("[P]");
-#endif
                 }
             }
 
@@ -386,9 +356,6 @@ void EVENT_USB_Device_ControlRequest(void)
                 Endpoint_ClearStatusStage();
 
                 keyboard_idle = ((USB_ControlRequest.wValue & 0xFF00) >> 8);
-#ifdef LUFA_DEBUG
-                xprintf("[I%d]%d", USB_ControlRequest.wIndex, (USB_ControlRequest.wValue & 0xFF00) >> 8);
-#endif
             }
 
             break;
@@ -400,9 +367,6 @@ void EVENT_USB_Device_ControlRequest(void)
                 Endpoint_Write_8(keyboard_idle);
                 Endpoint_ClearIN();
                 Endpoint_ClearStatusStage();
-#ifdef LUFA_DEBUG
-                print("[i]");
-#endif
             }
 
             break;
@@ -410,7 +374,7 @@ void EVENT_USB_Device_ControlRequest(void)
 }
 
 /*******************************************************************************
- * Host driver
+ * Host driver 
  ******************************************************************************/
 static uint8_t keyboard_leds(void)
 {
@@ -482,7 +446,6 @@ static void send_mouse(report_mouse_t *report)
 
 static void send_system(uint16_t data)
 {
-#ifdef EXTRAKEY_ENABLE
     uint8_t timeout = 255;
 
     if (USB_DeviceState != DEVICE_STATE_Configured)
@@ -494,18 +457,20 @@ static void send_system(uint16_t data)
     };
     Endpoint_SelectEndpoint(EXTRAKEY_IN_EPNUM);
 
-    /* Check if write ready for a polling interval around 10ms */
-    while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(40);
+    
+    if (keyboard_nkro) { /* Check if write ready for a polling interval around 1ms */
+        while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(4);
+    } else { /* Check if write ready for a polling interval around 10ms */
+        while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(40);
+    }
     if (!Endpoint_IsReadWriteAllowed()) return;
 
     Endpoint_Write_Stream_LE(&r, sizeof(report_extra_t), NULL);
     Endpoint_ClearIN();
-#endif
 }
 
 static void send_consumer(uint16_t data)
 {
-#ifdef EXTRAKEY_ENABLE
     uint8_t timeout = 255;
 
     if (USB_DeviceState != DEVICE_STATE_Configured)
@@ -518,12 +483,15 @@ static void send_consumer(uint16_t data)
     Endpoint_SelectEndpoint(EXTRAKEY_IN_EPNUM);
 
     /* Check if write ready for a polling interval around 10ms */
-    while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(40);
+    if (keyboard_nkro) { /* Check if write ready for a polling interval around 1ms */
+        while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(4);
+    } else { /* Check if write ready for a polling interval around 10ms */
+        while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(40);
+    }
     if (!Endpoint_IsReadWriteAllowed()) return;
 
     Endpoint_Write_Stream_LE(&r, sizeof(report_extra_t), NULL);
     Endpoint_ClearIN();
-#endif
 }
 
 
@@ -534,9 +502,6 @@ static void send_consumer(uint16_t data)
 #define SEND_TIMEOUT 5
 int8_t sendchar(uint8_t c)
 {
-#ifdef LUFA_DEBUG_SUART
-    xmit(c);
-#endif
     // Not wait once timeouted.
     // Because sendchar() is called so many times, waiting each call causes big lag.
     static bool timeouted = false;
@@ -594,9 +559,6 @@ ERROR_EXIT:
 #else
 int8_t sendchar(uint8_t c)
 {
-#ifdef LUFA_DEBUG_SUART
-    xmit(c);
-#endif
     return 0;
 }
 #endif
@@ -624,20 +586,13 @@ static void setup_usb(void)
 
     // for Console_Task
     USB_Device_EnableSOFEvents();
+    print_set_sendchar(sendchar);
 }
 
 int main(void)  __attribute__ ((weak));
 int main(void)
 {
     setup_mcu();
-
-#ifdef LUFA_DEBUG_SUART
-    SUART_OUT_DDR |= (1<<SUART_OUT_BIT);
-    SUART_OUT_PORT |= (1<<SUART_OUT_BIT);
-#endif
-    print_set_sendchar(sendchar);
-    print("\r\ninit\n");
-
     hook_early_init();
     keyboard_setup();
     setup_usb();
@@ -664,9 +619,7 @@ int main(void)
     hook_late_init();
     while (1) {
         while (USB_DeviceState == DEVICE_STATE_Suspended) {
-#ifdef LUFA_DEBUG
             print("[s]");
-#endif
             hook_usb_suspend_loop();
         }
 
@@ -686,19 +639,9 @@ void hook_early_init(void) {}
 __attribute__((weak))
 void hook_late_init(void) {}
 
-static uint8_t _led_stats = 0;
  __attribute__((weak))
 void hook_usb_suspend_entry(void)
 {
-    // Turn LED off to save power
-    // Set 0 with putting aside status before suspend and restore
-    // it after wakeup, then LED is updated at keyboard_task() in main loop
-    _led_stats = keyboard_led_stats;
-    keyboard_led_stats = 0;
-    led_set(keyboard_led_stats);
-
-    matrix_clear();
-    clear_keyboard();
 #ifdef SLEEP_LED_ENABLE
     sleep_led_enable();
 #endif
@@ -709,7 +652,7 @@ void hook_usb_suspend_loop(void)
 {
     suspend_power_down();
     if (USB_Device_RemoteWakeupEnabled && suspend_wakeup_condition()) {
-        USB_Device_SendRemoteWakeup();
+            USB_Device_SendRemoteWakeup();
     }
 }
 
@@ -719,12 +662,7 @@ void hook_usb_wakeup(void)
     suspend_wakeup_init();
 #ifdef SLEEP_LED_ENABLE
     sleep_led_disable();
+    // NOTE: converters may not accept this
+    led_set(host_keyboard_leds());
 #endif
-
-    // Restore LED status
-    // BIOS/grub won't recognize/enumerate if led_set() takes long(around 40ms?)
-    // Converters fall into the case and miss wakeup event(timeout to reply?) in the end.
-    //led_set(host_keyboard_leds());
-    // Instead, restore stats and update at keyboard_task() in main loop
-    keyboard_led_stats = _led_stats;
 }

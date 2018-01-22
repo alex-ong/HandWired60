@@ -45,17 +45,10 @@ void sleep_led_disable(void)
     TIMSK1 &= ~_BV(OCIE1A);
 }
 
-
-__attribute__ ((weak))
-void sleep_led_on(void)
+void sleep_led_toggle(void)
 {
-    led_set(1<<USB_LED_CAPS_LOCK);
-}
-
-__attribute__ ((weak))
-void sleep_led_off(void)
-{
-    led_set(0);
+    /* Disable Compare Match Interrupt */
+    TIMSK1 ^= _BV(OCIE1A);
 }
 
 
@@ -93,10 +86,10 @@ ISR(TIMER1_COMPA_vect)
     
     // LED on
     if (timer.pwm.count == 0) {
-        sleep_led_on();
+        led_set(1<<USB_LED_CAPS_LOCK);
     }
     // LED off
     if (timer.pwm.count == pgm_read_byte(&breathing_table[timer.pwm.index])) {
-        sleep_led_off();
+        led_set(0);
     }
 }

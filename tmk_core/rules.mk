@@ -420,14 +420,7 @@ flip: $(TARGET).hex
 	batchisp -hardware usb -device $(MCU) -operation start reset 0
 
 dfu: $(TARGET).hex
-	@echo -n dfu-programmer: waiting
-	@until dfu-programmer $(MCU) get bootloader-version > /dev/null 2>&1; do \
-		echo  -n "."; \
-		sleep 1; \
-	done
-	@echo
-
-ifneq (, $(findstring 0.7, $(shell dfu-programmer 2>/dev/null && dfu-programmer --version 2>&1)))
+ifneq (, $(findstring 0.7, $(shell dfu-programmer --version 2>&1)))
 	dfu-programmer $(MCU) erase --force
 else
 	dfu-programmer $(MCU) erase
@@ -447,7 +440,7 @@ flip-ee: $(TARGET).hex $(TARGET).eep
 	$(REMOVE) $(TARGET)eep.hex
 
 dfu-ee: $(TARGET).hex $(TARGET).eep
-ifneq (, $(findstring 0.7, $(shell dfu-programmer 2>/dev/null && dfu-programmer --version 2>&1)))
+ifneq (, $(findstring 0.7, $(shell dfu-programmer --version 2>&1)))
 	dfu-programmer $(MCU) flash --eeprom $(TARGET).eep
 else
 	dfu-programmer $(MCU) flash-eeprom $(TARGET).eep

@@ -54,7 +54,7 @@ void host_keyboard_send(report_keyboard_t *report)
     (*driver->send_keyboard)(report);
 
     if (debug_keyboard) {
-        dprint("keyboard: ");
+        dprint("keyboard_report: ");
         for (uint8_t i = 0; i < KEYBOARD_REPORT_SIZE; i++) {
             dprintf("%02X ", report->raw[i]);
         }
@@ -75,10 +75,6 @@ void host_system_send(uint16_t report)
 
     if (!driver) return;
     (*driver->send_system)(report);
-
-    if (debug_keyboard) {
-        dprintf("system: %04X\n", report);
-    }
 }
 
 void host_consumer_send(uint16_t report)
@@ -88,13 +84,9 @@ void host_consumer_send(uint16_t report)
 
     if (!driver) return;
     (*driver->send_consumer)(report);
-
-    if (debug_keyboard) {
-        dprintf("consumer: %04X\n", report);
-    }
 }
 
-uint16_t host_last_system_report(void)
+uint16_t host_last_sysytem_report(void)
 {
     return last_system_report;
 }
