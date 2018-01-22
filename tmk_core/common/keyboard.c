@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "matrix.h"
 #include "keymap.h"
 #include "host.h"
-#include "led.h"
+//#include "led.h"
 #include "keycode.h"
 #include "timer.h"
 #include "print.h"
@@ -102,11 +102,13 @@ void keyboard_task(void)
 #ifdef MATRIX_HAS_GHOST
     static matrix_row_t matrix_ghost[MATRIX_ROWS];
 #endif
-    static uint8_t led_status = 0;
+    //static uint8_t led_status = 0;
     matrix_row_t matrix_row = 0;
     matrix_row_t matrix_change = 0;
 
     matrix_scan();
+    bool keys_processed = false;
+
     for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
         matrix_row = matrix_get_row(r);
         matrix_change = matrix_row ^ matrix_prev[r];
@@ -126,31 +128,33 @@ void keyboard_task(void)
             matrix_ghost[r] = matrix_row;
 #endif
             if (debug_matrix) matrix_print();
+            //TODO: Test this bitmasking speed. it takes up less space which is good.
+            matrix_row_t bitmask = 1;
             for (uint8_t c = 0; c < MATRIX_COLS; c++) {
-                if (matrix_change & ((matrix_row_t)1<<c)) {
+                if (matrix_change & bitmask) {
                     keyevent_t e = (keyevent_t){
                         .key = (keypos_t){ .row = r, .col = c },
-                        .pressed = (matrix_row & ((matrix_row_t)1<<c)),
+                        .pressed = (matrix_row & bitmask),
                         .time = (timer_read() | 1) /* time should not be 0 */
                     };
                     action_exec(e);
-                    hook_matrix_change(e);
+                    //hook_matrix_change(e); //ALEX: Removed since we don't have hooks
                     // record a processed key
-                    matrix_prev[r] ^= ((matrix_row_t)1<<c);
-
-                    // This can miss stroke when scan matrix takes long like Topre
-                    // process a key per task call
-                    //goto MATRIX_LOOP_END;
+                    matrix_prev[r] ^= bitmask;
+                    keys_processed = true;
+                    //Old code used to jump to MATRIX_LOOP_END...
+                    //i.e. only process one event per keyboard_task.
                 }
+                bitmask <<= 1;
             }
         }
     }
-    // call with pseudo tick event when no real key event.
-    action_exec(TICK);
 
+    if (!keys_processed) {
+        action_exec(TICK);
+    }
 //MATRIX_LOOP_END:
-
-    hook_keyboard_loop();
+    hook_keyboard_loop(); //ALEX: removed since we don't have hooks
 
 #ifdef MOUSEKEY_ENABLE
     // mousekey repeat & acceleration
@@ -162,19 +166,22 @@ void keyboard_task(void)
 #endif
 
 #ifdef SERIAL_MOUSE_ENABLE
-        serial_mouse_task();
+    serial_mouse_task();
 #endif
 
 #ifdef ADB_MOUSE_ENABLE
-        adb_mouse_task();
+    adb_mouse_task();
 #endif
 
-    // update LED
+    // ALEX: removed since we don't have LEDs
+    /*
     if (led_status != host_keyboard_leds()) {
         led_status = host_keyboard_leds();
         if (debug_keyboard) dprintf("LED: %02X\n", led_status);
         hook_keyboard_leds_change(led_status);
     }
+    */
+    
 }
 
 void keyboard_set_leds(uint8_t leds)
