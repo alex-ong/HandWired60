@@ -57,10 +57,9 @@ static void command_console_help(void);
 #ifdef MOUSEKEY_ENABLE
 static bool mousekey_console(uint8_t code);
 static void mousekey_console_help(void);
-static uint8_t numkey2num(uint8_t code);
 #endif
 
-
+static uint8_t numkey2num(uint8_t code);
 static void switch_default_layer(uint8_t layer);
 
 
@@ -184,13 +183,21 @@ static bool command_common(uint8_t code)
 #ifdef KEYBOARD_LOCK_ENABLE
     static host_driver_t *host_driver = 0;
 #endif
+#ifdef SLEEP_LED_ENABLE
+    static bool sleep_led_test = false;
+#endif
     switch (code) {
 #ifdef SLEEP_LED_ENABLE
         case KC_Z:
             // test breathing sleep LED
             print("Sleep LED test\n");
-            sleep_led_toggle();
-            led_set(host_keyboard_leds());
+            if (sleep_led_test) {
+                sleep_led_disable();
+                led_set(host_keyboard_leds());
+            } else {
+                sleep_led_enable();
+            }
+            sleep_led_test = !sleep_led_test;
             break;
 #endif
 #ifdef BOOTMAGIC_ENABLE
@@ -622,7 +629,6 @@ static bool mousekey_console(uint8_t code)
 /***********************************************************
  * Utilities
  ***********************************************************/
- #ifdef MOUSEKEY_ENABLE
 static uint8_t numkey2num(uint8_t code)
 {
     switch (code) {
@@ -639,7 +645,6 @@ static uint8_t numkey2num(uint8_t code)
     }
     return 0;
 }
-#endif
 
 static void switch_default_layer(uint8_t layer)
 {

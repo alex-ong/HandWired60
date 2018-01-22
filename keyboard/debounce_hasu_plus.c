@@ -1,5 +1,4 @@
 /*
-Original TMK algorithm
 Debounces each key for user configurable press/release.
 Per key debouncing rather than whole-matrix debouncing.
 */
@@ -33,8 +32,6 @@ typedef uint8_t debounce_t;
 #define MAX_DEBOUNCE 0b111
 #define IS_TIME(var, time) (((var) & (MAX_DEBOUNCE)) == time)
 static debounce_t debounce_data[MATRIX_ROWS*MATRIX_COLS];
-
-
 
 static inline debounce_t set_debounce(uint8_t checks)
 {         
@@ -95,7 +92,7 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
             data++;
         }
         
-        *local_data = cols;        
+        *local_data = cols;
         *output_matrix = result;
         
         raw_values++;

@@ -63,7 +63,6 @@ static bool has_ghost_in_row(uint8_t row)
 #endif
 
 
-__attribute__ ((weak)) void matrix_setup(void) {}
 void keyboard_setup(void)
 {
     matrix_setup();
@@ -94,7 +93,7 @@ void keyboard_init(void)
 }
 
 /*
- * Do keyboard routine jobs: scan matrix, light LEDs, ...
+ * Do keyboard routine jobs: scan mantrix, light LEDs, ...
  * This is repeatedly called as fast as possible.
  */
 void keyboard_task(void)
@@ -138,8 +137,10 @@ void keyboard_task(void)
                     hook_matrix_change(e);
                     // record a processed key
                     matrix_prev[r] ^= ((matrix_row_t)1<<c);
+
+                    // This can miss stroke when scan matrix takes long like Topre
                     // process a key per task call
-                    goto MATRIX_LOOP_END;
+                    //goto MATRIX_LOOP_END;
                 }
             }
         }
@@ -147,7 +148,7 @@ void keyboard_task(void)
     // call with pseudo tick event when no real key event.
     action_exec(TICK);
 
-MATRIX_LOOP_END:
+//MATRIX_LOOP_END:
 
     hook_keyboard_loop();
 
