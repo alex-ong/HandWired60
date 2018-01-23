@@ -8,16 +8,16 @@
 #define DEVICE_VER      0x0002
 #define MANUFACTURER    XeaL
 #define PRODUCT         XeaLouS Keyboard
-#define DESCRIPTION     Custom Keyboard
+#define DESCRIPTION     XeaLouS Keyboard
 
 /* key matrix size */
 #define MATRIX_ROWS 5
 #define MATRIX_COLS 13
 
-/* Mechanical locking support. Use KC_LCAP, KC_LNUM or KC_LSCR instead in keymap */
-#define LOCKING_SUPPORT_ENABLE
-/* Locking resynchronize hack */
-#define LOCKING_RESYNC_ENABLE
+#define NO_ACTION_ONESHOT
+#define NO_ACTION_TAPPING
+#define NO_ACTION_MACRO
+#define NO_TRACK_KEY_PRESS //Try this out for 2016 era layer+shift detection (faster). 
 
 /* key combination for command */
 #define IS_COMMAND() (keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)))
