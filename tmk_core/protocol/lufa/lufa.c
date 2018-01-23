@@ -443,8 +443,8 @@ static void send_keyboard(report_keyboard_t *report)
         /* Boot protocol */
         Endpoint_SelectEndpoint(KEYBOARD_IN_EPNUM);
 
-        /* Check if write ready for a polling interval around 10ms */
-        while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(40);
+        /* Check if write ready for a polling interval around 1ms */
+        while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(4);
         if (!Endpoint_IsReadWriteAllowed()) return;
 
         /* Write Keyboard Report Data */
@@ -495,7 +495,7 @@ static void send_system(uint16_t data)
     Endpoint_SelectEndpoint(EXTRAKEY_IN_EPNUM);
 
     /* Check if write ready for a polling interval around 10ms */
-    while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(40);
+    while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(4);
     if (!Endpoint_IsReadWriteAllowed()) return;
 
     Endpoint_Write_Stream_LE(&r, sizeof(report_extra_t), NULL);
@@ -517,8 +517,8 @@ static void send_consumer(uint16_t data)
     };
     Endpoint_SelectEndpoint(EXTRAKEY_IN_EPNUM);
 
-    /* Check if write ready for a polling interval around 10ms */
-    while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(40);
+    /* Check if write ready for a polling interval around 1ms */
+    while (timeout-- && !Endpoint_IsReadWriteAllowed()) _delay_us(4);
     if (!Endpoint_IsReadWriteAllowed()) return;
 
     Endpoint_Write_Stream_LE(&r, sizeof(report_extra_t), NULL);

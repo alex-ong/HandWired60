@@ -8,7 +8,7 @@
 #include "matrix.h"
 #include "debounce_matrix.h"
 
-//#define BENCHMARK_MATRIX
+#define BENCHMARK_MATRIX
 #ifdef BENCHMARK_MATRIX
     #include "timer.h"
 #endif
