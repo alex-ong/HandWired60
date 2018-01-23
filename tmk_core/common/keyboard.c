@@ -108,6 +108,7 @@ void keyboard_task(void)
 
     matrix_scan();
     bool keys_processed = false;
+    uint16_t current_time = timer_read() | 1;
 
     for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
         matrix_row = matrix_get_row(r);
@@ -134,9 +135,11 @@ void keyboard_task(void)
                     keyevent_t e = (keyevent_t){
                         .key = (keypos_t){ .row = r, .col = c },
                         .pressed = (matrix_row & bitmask),
-                        .time = (timer_read() | 1) /* time should not be 0 */
+                        .time = current_time
                     };
                     action_exec(e);
+                    
+                    
                     //hook_matrix_change(e); //ALEX: Removed since we don't have hooks
                     // record a processed key
                     matrix_prev[r] ^= bitmask;
@@ -150,8 +153,9 @@ void keyboard_task(void)
     }
 
     if (!keys_processed) {
-        action_exec(TICK);
+        action_exec(TICK(current_time));
     }
+
 //MATRIX_LOOP_END:
     hook_keyboard_loop(); //ALEX: removed since we don't have hooks
 
