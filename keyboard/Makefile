@@ -13,6 +13,8 @@ SRC =	keymap_common.c 	matrix.c 	led.c
 #DEBOUNCE = debounce_hasu.c
 #DEBOUNCE = debounce_soarer.c
 DEBOUNCE = debounce_hasu_plus.c
+#DEBOUNCE = debounce_hasu_row.c
+#DEBOUNCE = debounce_hasu_noblock.c
 SRC := keymap.c $(SRC) $(DEBOUNCE)
 
 CONFIG_H = config.h
