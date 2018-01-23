@@ -45,6 +45,8 @@ void debounce_matrix_init(void)
     }
 }
 
+//scans non-debounced keys as fast as possible.
+//scans debouncing keys only once per ms.
 void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matrix)
 {
     uint8_t new_time = (uint8_t)timer_read(); //update timer.
@@ -53,16 +55,13 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
 
     debounce_t* data = debounce_data;
     matrix_row_t* local_data = matrix_debouncing;
-    
     for (uint8_t row_num = 0; row_num < MATRIX_ROWS; row_num++) {
         matrix_row_t cols = *raw_values;
         matrix_row_t result = *output_matrix;
         matrix_row_t existing = *local_data;
         
         matrix_row_t bitmask = 1;
-
-        //scans non-debounced keys as fast as possible.
-        //scans debouncing keys only once per ms.
+        
         for (uint8_t col_num = 0; col_num < MATRIX_COLS; col_num++) {
             bool new_col = CHECK_BITMASK(cols, bitmask);
             bool old_col = CHECK_BITMASK(existing, bitmask);
