@@ -17,6 +17,7 @@
 #define NO_ACTION_ONESHOT
 #define NO_ACTION_TAPPING
 #define NO_ACTION_MACRO
+#define NO_TRACK_KEY_PRESS //Try this out for 2016 era layer+shift detection (faster). 
 
 /* key combination for command */
 #define IS_COMMAND() (keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)))

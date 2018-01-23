@@ -4,7 +4,7 @@
 #include "util.h"
 #include "action_layer.h"
 #include "hook.h"
-
+#include "keymap_common.h"
 #ifdef DEBUG_ACTION
 #include "debug.h"
 #else
@@ -125,8 +125,9 @@ static uint8_t current_layer_for_key(keypos_t key)
 #ifndef NO_ACTION_LAYER
     action_t action = ACTION_TRANSPARENT;
     uint32_t layers = layer_state | default_layer_state;
-    /* check top layer first */
-    for (int8_t i = 31; i >= 0; i--) {
+
+    /* check top layer first. No need to check layer 0 since it is our default */
+    for (int8_t i = NUM_LAYERS - 1; i > 0; i--) {
         if (layers & (1UL<<i)) {
             action = action_for_key(i, key);
             if (action.code != (action_t)ACTION_TRANSPARENT.code) {
