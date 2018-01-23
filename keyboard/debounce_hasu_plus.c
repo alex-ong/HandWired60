@@ -4,9 +4,11 @@ Per key debouncing rather than whole-matrix debouncing.
 */
 #include "matrix.h"
 #include "debounce_matrix.h"
-#include <util/delay.h>
 #include "timer.h"
 
+//How many checks to do.
+//The first check is instant, the 2nd check may be less than 1ms apart
+//All further checks are at least 1ms apart.
 #ifndef DEBOUNCE_PRESS
     #define DEBOUNCE_PRESS 2
 #endif
@@ -26,19 +28,9 @@ static matrix_row_t matrix_debouncing[MATRIX_ROWS];
 
 static uint8_t current_time;
 
-//bits 1,2,3 - bounces remaining
-//bits 6,7,8 - last timestamp with debounce, modulo MAX_DEBOUNCE
-typedef uint8_t debounce_t;
-#define IS_DEBOUNCING(var) (var)
-#define CHECKS_REMAINING(var) (((var) >> 5))
-#define MAX_DEBOUNCE 0b111
-#define IS_TIME(var, time) (((var) & (MAX_DEBOUNCE)) == time)
+typedef uint8_t debounce_t; //checks remaining
 static debounce_t debounce_data[MATRIX_ROWS*MATRIX_COLS];
-
-static inline debounce_t set_debounce(uint8_t checks)
-{         
-    return ((checks << 5) | (current_time % MAX_DEBOUNCE));
-}
+#define IS_DEBOUNCING(var) (var) //(var != 0)
 
 void debounce_matrix_init(void)
 {
@@ -55,7 +47,10 @@ void debounce_matrix_init(void)
 
 void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matrix)
 {
-    current_time = timer_read() % MAX_DEBOUNCE; //update timer.
+    uint8_t new_time = (uint8_t)timer_read(); //update timer.
+    bool timer_changed = new_time == current_time;
+    current_time = new_time;
+
     debounce_t* data = debounce_data;
     matrix_row_t* local_data = matrix_debouncing;
     
@@ -66,31 +61,30 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
         
         matrix_row_t bitmask = 1;
 
+        //scans non-debounced keys as fast as possible.
+        //scans debouncing keys only once per ms.
         for (uint8_t col_num = 0; col_num < MATRIX_COLS; col_num++) {
             bool new_col = CHECK_BITMASK(cols, bitmask);
             bool old_col = CHECK_BITMASK(existing, bitmask);
 
-            if (IS_DEBOUNCING(*data)) {                
-                if (!IS_TIME(*data, current_time)) { //only check once per millisecond
-                    if (new_col == old_col) {
-                        uint8_t remaining_checks = CHECKS_REMAINING(*data);
-                        if (remaining_checks == 1) //compare to one so we don't have to decrement
+            if (IS_DEBOUNCING(*data)) {
+                if (timer_changed) { //only check once per millisecond.
+                    if (new_col == old_col) {                 
+                        (*data)--; //decrement count.
+                        if (*data == 0) //compare to one so we don't have to decrement
                         {
                             if (new_col) {
                                 result = SET_BITMASK(result, bitmask);
                             } else {
                                 result = CLEAR_BITMASK(result, bitmask);
-                            }
-                            *data = 0;
-                        } else {
-                            *data = set_debounce(remaining_checks - 1);
-                        }                        
+                            }                        
+                        }                 
                     } else { //reset checks because value changed.
-                        *data = set_debounce(new_col ? DEBOUNCE_PRESS : DEBOUNCE_RELEASE);
-                    }
+                        *data = new_col ? DEBOUNCE_PRESS : DEBOUNCE_RELEASE;
+                    }            
                 }
             } else if (new_col != old_col) { //not debouncing. time to add a debouncer
-                *data = set_debounce(new_col ? DEBOUNCE_PRESS : DEBOUNCE_RELEASE);
+                *data = new_col ? DEBOUNCE_PRESS : DEBOUNCE_RELEASE;
             }
             data++;
             bitmask <<= 1;
