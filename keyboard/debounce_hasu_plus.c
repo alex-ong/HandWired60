@@ -14,7 +14,7 @@ Per key debouncing rather than whole-matrix debouncing.
 #endif
 
 #ifndef DEBOUNCE_RELEASE
-    #define DEBOUNCE_RELEASE 5
+    #define DEBOUNCE_RELEASE 3
 #endif
 
 #define CHECK_BIT(var,pos)          ((var) & (1 <<(pos)))
