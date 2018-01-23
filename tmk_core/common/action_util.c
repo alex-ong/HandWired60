@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "action_util.h"
 #include "timer.h"
 
+
 static inline void add_key_byte(uint8_t code);
 static inline void del_key_byte(uint8_t code);
 #ifdef NKRO_ENABLE
@@ -53,16 +54,15 @@ static int16_t oneshot_time = 0;
 
 
 void send_keyboard_report(void) {
-    keyboard_report->mods  = real_mods;
-    keyboard_report->mods |= weak_mods;
+    keyboard_report->mods  = real_mods | weak_mods;    
 #ifndef NO_ACTION_ONESHOT
     if (oneshot_mods) {
-#if (defined(ONESHOT_TIMEOUT) && (ONESHOT_TIMEOUT > 0))
+    #if (defined(ONESHOT_TIMEOUT) && (ONESHOT_TIMEOUT > 0))
         if (TIMER_DIFF_16(timer_read(), oneshot_time) >= ONESHOT_TIMEOUT) {
             dprintf("Oneshot: timeout\n");
             clear_oneshot_mods();
         }
-#endif
+    #endif
         keyboard_report->mods |= oneshot_mods;
         if (has_anykey()) {
             clear_oneshot_mods();
