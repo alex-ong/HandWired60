@@ -4,7 +4,6 @@ Per key debouncing rather than whole-matrix debouncing.
 */
 #include "matrix.h"
 #include "debounce_matrix.h"
-#include <util/delay.h>
 #include "timer.h"
 
 #ifndef DEBOUNCE_PRESS
