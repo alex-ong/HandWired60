@@ -103,7 +103,7 @@ void keyboard_task(void)
 #ifdef MATRIX_HAS_GHOST
     static matrix_row_t matrix_ghost[MATRIX_ROWS];
 #endif
-    static uint8_t led_status = 0;
+    //static uint8_t led_status = 0;
     matrix_row_t matrix_row = 0;
     matrix_row_t matrix_change = 0;
 

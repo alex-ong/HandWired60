@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "keyboard.h"
 #include "action.h"
+#include "keymap_common.h"
 #include "util.h"
 #include "action_layer.h"
 #include "hook.h"
@@ -122,7 +123,7 @@ action_t layer_switch_get_action(keypos_t key)
 #ifndef NO_ACTION_LAYER
     uint32_t layers = layer_state | default_layer_state;
     /* check top layer first */
-    for (int8_t i = 31; i >= 0; i--) {
+    for (int8_t i = NUM_LAYERS-1; i > 0; i--) {
         if (layers & (1UL<<i)) {
             action = action_for_key(i, key);
             if (action.code != ACTION_TRANSPARENT) {
