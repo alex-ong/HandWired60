@@ -1,6 +1,5 @@
 /*
-Original TMK algorithm
-Has debounce timers per row.
+TMK Algorithm for infinity and newer boards.
 */
 #include "matrix.h"
 #include "debounce_matrix.h"
@@ -10,10 +9,10 @@ Has debounce timers per row.
     #define DEBOUNCE 5
 #endif
 
-static uint8_t debouncing = DEBOUNCE; //debouncing timer in milliseconds.
-static matrix_row_t matrix_debouncing[MATRIX_ROWS];
+static bool debouncing = false;
+static uint16_t debouncing_time;
 
-static uint8_t last_tick = 0;
+static matrix_row_t matrix_debouncing[MATRIX_ROWS];
 
 void debounce_matrix_init(void)
 {	
@@ -23,33 +22,23 @@ void debounce_matrix_init(void)
     }
 }
 
-bool tick_changed(void)
-{
-    uint8_t new_tick = timer_read() % 0xFF; //update timer.
-    bool result = new_tick == last_tick;
-    last_tick = new_tick;
-    return result;
-}
-
 void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matrix)
 {
-    bool new_tick = tick_changed();
+    uint16_t current_time = timer_read();
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         matrix_row_t cols = raw_values[i];
         if (matrix_debouncing[i] != cols) {
             matrix_debouncing[i] = cols;
-            debouncing = DEBOUNCE;
+            debouncing = true;
+            debouncing_time = current_time;
         }
-
-        if (debouncing) {
-            if (new_tick) {
-                if (--debouncing) {
-                    for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
-                        output_matrix[i] = matrix_debouncing[i];
-                    }
-                }
-            }
+    }
+    
+    if (debouncing && timer_elapsed(debouncing_time) > DEBOUNCE) {
+        for (int i = 0; i < MATRIX_ROWS; i++) {
+            output_matrix[i] = matrix_debouncing[i];
         }
+        debouncing = false;
     }
     
 }

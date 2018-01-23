@@ -147,7 +147,7 @@ void keyboard_task(void)
                     //Old code used to jump to MATRIX_LOOP_END...
                     //i.e. only process one event per keyboard_task.
                     //now we can process multiple - which could be bad if it takes awhile.
-                    //goto MATRIX_LOOP_END;
+                    goto MATRIX_LOOP_END;
                 }
                 bitmask <<= 1;
             }
@@ -157,7 +157,7 @@ void keyboard_task(void)
     if (!keys_processed) {
         action_exec(TICK(current_time));
     }
-//MATRIX_LOOP_END:
+MATRIX_LOOP_END:
     hook_keyboard_loop(); //ALEX: removed since we don't have hooks
 
 #ifdef MOUSEKEY_ENABLE
