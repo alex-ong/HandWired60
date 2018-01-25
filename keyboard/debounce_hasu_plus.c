@@ -10,11 +10,11 @@ Per key debouncing rather than whole-matrix debouncing.
 //The first check is instant, the 2nd check may be less than 1ms apart
 //All further checks are at least 1ms apart.
 #ifndef DEBOUNCE_PRESS
-    #define DEBOUNCE_PRESS 2
+    #define DEBOUNCE_PRESS 3
 #endif
 
 #ifndef DEBOUNCE_RELEASE
-    #define DEBOUNCE_RELEASE 3
+    #define DEBOUNCE_RELEASE 5
 #endif
 
 #define CHECK_BIT(var,pos)          ((var) & (1 <<(pos)))
@@ -83,6 +83,8 @@ void update_debounce_matrix(matrix_row_t* raw_values, matrix_row_t* output_matri
                     } else { //reset checks because value changed.
                         *data = new_col ? DEBOUNCE_PRESS : DEBOUNCE_RELEASE;
                     }            
+                } else if (new_col != old_col) {
+                    *data = new_col ? DEBOUNCE_PRESS : DEBOUNCE_RELEASE;
                 }
             } else if (new_col != old_col) { //not debouncing. time to add a debouncer
                 *data = new_col ? DEBOUNCE_PRESS : DEBOUNCE_RELEASE;
